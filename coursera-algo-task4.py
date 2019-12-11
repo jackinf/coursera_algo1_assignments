@@ -16,9 +16,10 @@ class Vertex:
 
     def disconnect(self, vertex):
         for next_vertex in vertex.vertices:
+            # if vertex in next_vertex.vertices:
             next_vertex.vertices.remove(vertex)
+        # if self in vertex.vertices:
         vertex.vertices.remove(self)
-        self.vertices.remove(vertex)
 
     # https://en.wikipedia.org/wiki/Karger%27s_algorithm
     def contract(self):
@@ -54,14 +55,19 @@ with open('coursera-algo-task4.txt', 'r') as f:
         for vertex in vertices:
             target.connect(vertex)
 
+plt.ion()
+while True:
+    g = nx.Graph()
 
-g = nx.Graph()
+    chosen = random.choice(unique_vertices)
+    chosen.contract()
+    for k, vs in unique_vertices.items():
+        server_id = 'server_%s' % k
 
-for k, vs in unique_vertices.items():
-    server_id = 'server_%s' % k
+        for v in vs.vertices:
+            g.add_edge(server_id, v)
 
-    for v in vs.vertices:
-        g.add_edge(server_id, v)
-
-nx.draw(g)
-plt.show()
+    nx.draw(g)
+    plt.pause(0.1)
+    plt.clf()
+    plt.show()
