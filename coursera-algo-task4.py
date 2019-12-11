@@ -1,5 +1,8 @@
 import random
-from typing import List, Dict
+
+import networkx as nx
+import matplotlib.pyplot as plt
+from typing import Dict
 
 
 class Vertex:
@@ -51,3 +54,14 @@ with open('coursera-algo-task4.txt', 'r') as f:
         for vertex in vertices:
             target.connect(vertex)
 
+
+g = nx.Graph()
+
+for k, vs in unique_vertices.items():
+    server_id = 'server_%s' % k
+
+    for v in vs.vertices:
+        g.add_edge(server_id, v)
+
+nx.draw(g)
+plt.show()
