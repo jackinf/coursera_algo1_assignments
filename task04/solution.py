@@ -2,49 +2,10 @@ import random
 
 import networkx as nx
 import matplotlib.pyplot as plt
-from typing import Dict
+from typing import Dict, List
 
-
-class Vertex:
-    def __init__(self, value: int):
-        self.value = value
-        self.vertices = []
-
-    def connect(self, vertex: 'Vertex'):
-        self.vertices.append(vertex)
-        vertex.vertices.append(self)
-
-    # def disconnect(self, vertex):
-    #     for next_vertex in vertex.vertices:
-    #         # if vertex in next_vertex.vertices:
-    #         next_vertex.vertices.remove(vertex)
-    #     # if self in vertex.vertices:
-    #     vertex.vertices.remove(self)
-
-    # https://en.wikipedia.org/wiki/Karger%27s_algorithm
-    def contract(self):
-        if len(self.vertices) == 0:
-            print('Cannot contract - no connections')
-            return
-
-        # target = random.choice(self.vertices)
-        # next_vertices = target.vertices
-        # # self.disconnect(target)
-        # for next_vertex in next_vertices:
-        #     if next_vertex not in self.vertices:
-        #         self.vertices.append(next_vertex)
-
-    def __str__(self):
-        return f'[{self.value}]'
-
-    def __repr__(self):
-        return self.__str__()
-
-
-class Edge:
-    def __init__(self, a: Vertex, b: Vertex):
-        self.a = a
-        self.b = b
+from task04.edge import Edge
+from task04.vertex import Vertex
 
 # test case 1: expected result: 2, number of cuts are [(1,7), (4,5)]
 # test case 2: expected result: 2, number of cuts are [(1,7), (4,5)]
@@ -52,33 +13,64 @@ class Edge:
 # test case 4: expected result: 1, cut is [(4,5)]
 # test case 5: expected result: 3
 
-with open('task04/test-case-1.txt', 'r') as f:
-    lines = f.readlines()
-    first_values = [int(x.split(' ')[0]) for x in lines]
-    unique_vertices: Dict[int, Vertex] = {x: Vertex(x) for x in first_values}
 
-    # connect vertices between each-other
-    for line in lines:
-        items = [int(x) for x in line.split(' ')]
-        target: Vertex = unique_vertices[items[0]]
-        vertices = [unique_vertices[x] for x in items[1:]]
-        for vertex in vertices:
-            target.connect(vertex)
+def collect_input():
+    edges = []
+    with open('task04/test-case-1.txt', 'r') as f:
+        lines = f.readlines()
+        first_values = [int(x.split(' ')[0]) for x in lines]
+        unique_vertices: Dict[int, Vertex] = {x: Vertex(x) for x in first_values}
+
+        # connect vertices between each-other
+        for line in lines:
+            items = [int(x) for x in line.split(' ')]
+            target: Vertex = unique_vertices[items[0]]
+            vertices = [unique_vertices[x] for x in items[1:]]
+            for vertex in vertices:
+                edge = target.connect(vertex)
+                if edge is not None:
+                    edges.append(edge)
+    return edges
 
 
-
-plt.ion()
-while True:
+def draw(edges_arg, **kwargs):
     g = nx.Graph()
+    for edge in edges_arg:
+        g.add_edge(edge.a, edge.b)
 
-    chosen = random.choice(unique_vertices)
-    chosen.contract()
-
-    for k, vs in unique_vertices.items():
-        for v in vs.vertices:
-            g.add_edge(vs, v)
+    if "contract" in kwargs and kwargs["contract"] is True:
+        chosen_edge = next(x for x in edges_arg if x.a.value == 7 and x.b.value == 1 or x.a.value == 1 and x.b.value == 7)
+        chosen_edge.contract()
+        edges_arg.remove(chosen_edge)
+        g.remove_edge(chosen_edge.a, chosen_edge.b)
 
     nx.draw(g, with_labels=True)
-    plt.pause(5)
-    plt.clf()
     plt.show()
+
+
+def update_and_draw(edges_arg: List[Edge]):
+    plt.ion()
+    g = nx.Graph()
+    for edge in edges_arg:
+        g.add_edge(edge.a, edge.b)
+    while True:
+        chosen_edge = random.choice(edges_arg)
+        chosen_edge.contract()
+        edges_arg.remove(chosen_edge)
+        g.remove_edge(chosen_edge.a, chosen_edge.b)
+
+        nx.draw(g, with_labels=True)
+        plt.pause(3)
+        plt.clf()
+        plt.show()
+
+
+edges = collect_input()
+print(edges)
+draw(edges)
+draw(edges, contract=True)
+# update_and_draw(edges)
+
+
+
+
