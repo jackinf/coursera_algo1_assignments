@@ -14,8 +14,7 @@ from task04.vertex import Vertex
 # test case 5: expected result: 3
 
 
-def collect_input():
-    edges = []
+def collect_input() -> Dict[int, Vertex]:
     with open('task04/test-case-1.txt', 'r') as f:
         lines = f.readlines()
         first_values = [int(x.split(' ')[0]) for x in lines]
@@ -27,33 +26,51 @@ def collect_input():
             target: Vertex = unique_vertices[items[0]]
             vertices = [unique_vertices[x] for x in items[1:]]
             for vertex in vertices:
-                edge = target.connect(vertex)
-                if edge is not None:
-                    edges.append(edge)
-    return edges
+                target.connect(vertex)
+        return unique_vertices
 
 
-def draw(edges_arg, **kwargs):
-    g = nx.Graph()
+def get_all_edges(all_vertices: Dict[int, Vertex]) -> List[Edge]:
+    all_edges = []
+    for k, v in all_vertices.items():
+        all_edges += v.edges
+    return all_edges
+
+
+def build_graph(g: nx.Graph, vertices: Dict[int, Vertex]):
+    edges_arg: List[Edge] = get_all_edges(vertices)
     for edge in edges_arg:
         g.add_edge(edge.a, edge.b)
 
+
+def draw(vertices: Dict[int, Vertex], **kwargs):
+    g = nx.Graph()
+
+    build_graph(g, vertices)
+
     if "contract" in kwargs and kwargs["contract"] is True:
+        edges_arg = get_all_edges(vertices)
         chosen_edge = next(x for x in edges_arg if x.a.value == 7 and x.b.value == 1 or x.a.value == 1 and x.b.value == 7)
-        chosen_edge.contract()
-        edges_arg.remove(chosen_edge)
+
+        vertex_to_remove = chosen_edge.contract()
         g.remove_edge(chosen_edge.a, chosen_edge.b)
+
+        vertices.pop(vertex_to_remove.value)
+        g.remove_node(vertex_to_remove)
 
     nx.draw(g, with_labels=True)
     plt.show()
 
 
-def update_and_draw(edges_arg: List[Edge]):
+def update_and_draw(vertices: Dict[int, Vertex]):
     plt.ion()
     g = nx.Graph()
-    for edge in edges_arg:
-        g.add_edge(edge.a, edge.b)
+
+    build_graph(g, vertices)
+
     while True:
+        edges_arg: List[Edge] = get_all_edges(vertices)
+
         chosen_edge = random.choice(edges_arg)
         chosen_edge.contract()
         edges_arg.remove(chosen_edge)
@@ -65,12 +82,10 @@ def update_and_draw(edges_arg: List[Edge]):
         plt.show()
 
 
-edges = collect_input()
+vertices = collect_input()
+print(vertices)
+edges = get_all_edges(vertices)
 print(edges)
-draw(edges)
-draw(edges, contract=True)
+draw(vertices)
+draw(vertices, contract=True)
 # update_and_draw(edges)
-
-
-
-

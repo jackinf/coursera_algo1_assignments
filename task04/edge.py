@@ -5,7 +5,7 @@ class Edge:
         self.a = a
         self.b = b
 
-    def contract(self):
+    def contract(self) -> 'Vertex':
         """
         https://en.wikipedia.org/wiki/Karger%27s_algorithm
         """
@@ -14,6 +14,8 @@ class Edge:
         self.b.edges += self.a.edges
         while self in self.b.edges:
             self.b.edges.remove(self)
+
+        return self.a
 
     def __str__(self):
         return f'{self.a}--{self.b}'
