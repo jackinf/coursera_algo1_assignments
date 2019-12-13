@@ -56,7 +56,7 @@ class Solution:
         return array[start]
 
 
-file = open('coursera-algo-task3.txt', 'r')
+file = open('input.txt', 'r')
 with file as f:
     nums = [int(x.strip()) for x in f.readlines()]
 
